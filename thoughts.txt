@@ -1,0 +1,45 @@
+so we want liar dice:
+http://en.wikipedia.org/wiki/Liar's_dice
+
+we want to persist bots across games (in some cases). mostly single threaded so we can learn from previous games (and moves must be sequential).
+
+so:
+	match: a grouping of games with stored outcomes (e.g. 1000 games). we initialise the players here
+		game: an individual game, winner gets points when everyone else has no die left
+			round: one round (i.e. when everyone shakes their die)
+				bid/action: as we move around the players they can either say 'liar' or 'bid q,v' (or 'exact', if rule is enabled)
+
+
+to save everyone from tracking the game, we could just pass the game state around:
+if the player is a human, we just won't show it to them (unless they want to 'cheat')
+
+	GameState
+		players: ['bob', 'joe', 'sally']
+		last_bid: {player: 'bob', quantity: 5, value: 3}
+		total_die: 15
+
+or we make it realistic and just pass
+
+	last_bid: {player: 'bob', quantity: 5, value: 3}
+
+but we really want a pub-sub type thing, where everyone hears what's going on in the game
+
+	so the game runner publishes moves, e.g.:
+	bid: {player: 'bob', quantity: 5, value: 3}
+
+	# here we can specify 'liar' for the usual gte action, or 'exact' for the == action (with rules on die as per gm)
+	endround: {player: 'joe', type: 'liar', outcome: True}
+
+	# or we just combine the two into an 'action'
+
+unless the it is the turn of the current bot, in which case we call 'get bid' (in pub sub we would assume the bot will publish a bid...)
+	getbid(last_bid, players)
+
+	return 'liar', {bid, q, v}, 'exact'
+
+bots need initialising for round, game, match:
+	they can maintain their internal state between rounds and games, but it is only fair to notify them of each
+
+	newround(your_die_state, players)
+
+	newgame(gamestate, players)
