@@ -8,12 +8,12 @@ class Human(Player):
 
     def ask(self, lastbid):
         equiv = get_die_freq(self.diestate, ones_as_value=(lastbid.value if self.rules.wilds else False))
-        equiv_str = " ".join('%sx%s' % (k, v) for k, v in sorted(equiv.items()))
+        equiv_str = " ".join('%sx%s' % (v, k) for k, v in sorted(equiv.items()))
         input_string = "%s it is your go. Last bid was %s, Your die are %s,  \nThe equivalent counts are %s\nenter q,v liar%s: " % (
             self.name, lastbid, self.diestate, equiv_str, " or exact" if self.rules.exact else ""
         )
         get = raw_input(input_string)
-        os.system('cls')
+        #os.system('cls')
         return get
 
     def new_game(self, players, rules):
